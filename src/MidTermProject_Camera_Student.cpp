@@ -66,7 +66,14 @@ int main(int argc, const char *argv[])
         // push image into data frame buffer
         DataFrame frame;
         frame.cameraImg = imgGray;
-        dataBuffer.push_back(frame);
+        //dataBuffer.push_back(frame);
+        
+        // I think it would be better to use std::deque, but as far as I understand the task assumes using std::vector
+        if (dataBuffer.size() >= dataBufferSize)
+            dataBuffer.erase(dataBuffer.begin());
+        
+        dataBuffer.push_back(std::move(frame));
+        assert(dataBuffer.size() <= dataBufferSize);
 
         //// EOF STUDENT ASSIGNMENT
         cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
