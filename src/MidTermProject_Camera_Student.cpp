@@ -68,7 +68,7 @@ int main(int argc, const char *argv[])
         frame.cameraImg = imgGray;
         //dataBuffer.push_back(frame);
         
-        // I think it would be better to use std::deque, but as far as I understand the task assumes using std::vector
+        // TODO: I think it would be better to use std::deque, but as far as I understand the task assumes using std::vector
         if (dataBuffer.size() >= dataBufferSize)
             dataBuffer.erase(dataBuffer.begin());
         
@@ -82,7 +82,7 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "SHITOMASI";
+        string detectorType = "HARRIS"; //"SHITOMASI";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -91,11 +91,32 @@ int main(int argc, const char *argv[])
         if (detectorType.compare("SHITOMASI") == 0)
         {
             detKeypointsShiTomasi(keypoints, imgGray, false);
-        }
-        else
+        }   // SHITOMASI
+        else if (detectorType.compare("HARRIS") == 0)
         {
-            //...
-        }
+            detKeypointsHarris(keypoints, imgGray, false);
+        }   // HARRIS
+        else if (detectorType.compare("FAST") == 0)
+        {
+            
+        }   // FAST
+        else if (detectorType.compare("BRISK") == 0)
+        {
+
+        }   // BRISK
+        else if (detectorType.compare("ORB") == 0)
+        {
+
+        }   // ORB
+        else if (detectorType.compare("AKAZE") == 0)
+        {
+
+        }   // AKAZE
+        else if (detectorType.compare("SIFT") == 0)
+        {
+
+        }   // SIFT
+
         //// EOF STUDENT ASSIGNMENT
 
         //// STUDENT ASSIGNMENT

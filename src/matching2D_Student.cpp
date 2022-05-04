@@ -61,6 +61,51 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
     cout << descriptorType << " descriptor extraction in " << 1000 * t / 1.0 << " ms" << endl;
 }
 
+void detKeypointsHarris(std::vector<cv::KeyPoint>& keypoints, cv::Mat& img, bool bVis)
+{
+    double t = static_cast<double>(cv::getTickCount());
+
+    int blockSize = 5;
+    int apertureSize = 3;
+    double k = 0.05;
+    cv::Mat imgCorners;
+    cv::cornerHarris(img, imgCorners, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
+
+    cv::Mat imgCornersNorm;
+    cv::normalize(imgCorners, imgCornersNorm, 0, 255, cv::NORM_MINMAX);
+
+    float minCornerness = 100;
+    keypoints.clear();
+    for (int i = 0; i < imgCornersNorm.rows; ++i)
+    {
+        for (int j = 0; j < imgCornersNorm.cols; ++j)
+        {
+            float harrisResponse = imgCornersNorm.at<float>(i, j);
+            if (harrisResponse >= minCornerness)
+            {
+                keypoints.emplace_back(
+                    static_cast<float>(j), static_cast<float>(i), 
+                    static_cast<float>(blockSize), -1.0f, harrisResponse);
+            }
+        }
+    }
+
+    t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
+
+    std::cout << "Harris detection with n = " << keypoints.size() << " keypoints in " << 1000 * t << " ms" << std::endl;
+
+    if (bVis)
+    {
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+        string windowName = "Harris Corner Detector Results";
+        //cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}   // detKeypointsHarris
+
 // Detect keypoints in image using the traditional Shi-Thomasi detector
 void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
 {
@@ -68,7 +113,7 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
     int blockSize = 4;       //  size of an average block for computing a derivative covariation matrix over each pixel neighborhood
     double maxOverlap = 0.0; // max. permissible overlap between two features in %
     double minDistance = (1.0 - maxOverlap) * blockSize;
-    int maxCorners = img.rows * img.cols / max(1.0, minDistance); // max. num. of keypoints
+    int maxCorners = static_cast<int>(img.rows * img.cols / max(1.0, minDistance)); // max. num. of keypoints
 
     double qualityLevel = 0.01; // minimal accepted quality of image corners
     double k = 0.04;
@@ -84,7 +129,7 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
 
         cv::KeyPoint newKeyPoint;
         newKeyPoint.pt = cv::Point2f((*it).x, (*it).y);
-        newKeyPoint.size = blockSize;
+        newKeyPoint.size = static_cast<float>(blockSize);
         keypoints.push_back(newKeyPoint);
     }
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
