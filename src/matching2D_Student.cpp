@@ -96,13 +96,13 @@ void detKeypointsHarris(std::vector<cv::KeyPoint>& keypoints, cv::Mat& img, bool
 
     if (bVis)
     {
-        cv::Mat visImage = img.clone();
+        cv::Mat visImage; // = img.clone();
         cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
         string windowName = "Harris Corner Detector Results";
         //cv::namedWindow(windowName, 6);
         imshow(windowName, visImage);
-        cv::waitKey(0);
+        cv::waitKey();
     }
 }   // detKeypointsHarris
 
@@ -143,6 +143,56 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
         string windowName = "Shi-Tomasi Corner Detector Results";
         cv::namedWindow(windowName, 6);
         imshow(windowName, visImage);
-        cv::waitKey(0);
+        cv::waitKey();
     }
-}
+}   // detKeypointsShiTomasi
+
+void detKeypointsModern(std::vector<cv::KeyPoint>& keypoints, cv::Mat& img, std::string detectorType, bool bVis)
+{
+    cv::Ptr<cv::FeatureDetector> detector;
+
+    if (detectorType.compare("FAST") == 0)
+    {
+        detector = cv::FastFeatureDetector::create();
+    }   // FAST
+    else if (detectorType.compare("BRISK") == 0)
+    {
+        detector = cv::BRISK::create();
+    }   // BRISK
+    else if (detectorType.compare("ORB") == 0)
+    {
+        detector = cv::ORB::create();
+    }   // ORB
+    else if (detectorType.compare("AKAZE") == 0)
+    {
+        detector = cv::AKAZE::create();
+    }   // AKAZE
+    else if (detectorType.compare("SIFT") == 0)
+    {
+#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44
+        detector = cv::xfeatures2d::SIFT::create();
+#else
+        detector = cv::SiftFeatureDetector::create();
+#endif
+    }   // SIFT
+    else throw std::runtime_error("Unknown detector type: " + detectorType);
+
+    keypoints.clear();
+
+    double t = static_cast<double>(cv::getTickCount());
+    detector->detect(img, keypoints);
+    t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
+
+    std::cout << detectorType << " with n = " << keypoints.size() << " in " << t * 1000 << " ms" << std::endl;
+
+    if (bVis)
+    {
+        cv::Mat visImage;
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        
+        string windowName = detectorType + " Detector Results";
+        //cv::namedWindow(windowName, 6);
+        imshow(windowName, visImage);
+        cv::waitKey();
+    }
+}   // detKeypointsModern

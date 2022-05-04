@@ -82,7 +82,7 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "HARRIS"; //"SHITOMASI";
+        string detectorType = "SIFT"; //"AKAZE"; //"ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -96,26 +96,10 @@ int main(int argc, const char *argv[])
         {
             detKeypointsHarris(keypoints, imgGray, false);
         }   // HARRIS
-        else if (detectorType.compare("FAST") == 0)
+        else
         {
-            
-        }   // FAST
-        else if (detectorType.compare("BRISK") == 0)
-        {
-
-        }   // BRISK
-        else if (detectorType.compare("ORB") == 0)
-        {
-
-        }   // ORB
-        else if (detectorType.compare("AKAZE") == 0)
-        {
-
-        }   // AKAZE
-        else if (detectorType.compare("SIFT") == 0)
-        {
-
-        }   // SIFT
+            detKeypointsModern(keypoints, imgGray, detectorType, false);
+        }   // other detector types
 
         //// EOF STUDENT ASSIGNMENT
 
@@ -133,7 +117,7 @@ int main(int argc, const char *argv[])
         //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
-        bool bLimitKpts = false;
+        bool bLimitKpts = true; // TODO: disable it in the final version
         if (bLimitKpts)
         {
             int maxKeypoints = 50;
