@@ -13,8 +13,12 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d.hpp>
-#include <opencv2/xfeatures2d.hpp>
-#include <opencv2/xfeatures2d/nonfree.hpp>
+
+// check whether we need to include xfeatures2d to use SIFT
+#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44 
+    #include <opencv2/xfeatures2d.hpp>
+    #include <opencv2/xfeatures2d/nonfree.hpp>
+#endif
 
 #include "dataStructures.h"
 
