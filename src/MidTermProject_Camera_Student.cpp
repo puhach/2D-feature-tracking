@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include <deque>
 #include <cmath>
 #include <limits>
 #include <numeric>
@@ -12,11 +13,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d.hpp>
 
-// check whether we need to include xfeatures2d to use SIFT
-#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44 
-    #include <opencv2/xfeatures2d.hpp>
-    #include <opencv2/xfeatures2d/nonfree.hpp>
-#endif
+/// check whether we need to include xfeatures2d to use SIFT
+//#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44 
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/xfeatures2d/nonfree.hpp>
+//#endif
 
 #include "dataStructures.h"
 #include "matching2D.hpp"
@@ -42,7 +43,8 @@ int main(int argc, const char *argv[])
 
     // misc
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
-    vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
+    //vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
+    std::deque<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
 
     unsigned long totalKeypoints = 0;
@@ -75,9 +77,11 @@ int main(int argc, const char *argv[])
         frame.cameraImg = imgGray;
         //dataBuffer.push_back(frame);
         
-        // TODO: I think it would be better to use std::deque, but as far as I understand the task assumes using std::vector
+        // std::deque seems to be more appropriate for this task as compared to std::vector;
+        // ideally, we don't even need a container here, but the existing code implies using it
         if (dataBuffer.size() >= dataBufferSize)
-            dataBuffer.erase(dataBuffer.begin());
+            dataBuffer.pop_front();
+            //dataBuffer.erase(dataBuffer.begin());
         
         dataBuffer.push_back(std::move(frame));
         assert(dataBuffer.size() <= dataBufferSize);
@@ -89,8 +93,8 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = /*"SIFT";*/ "AKAZE"; //"ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
-        //string detectorType = "ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
+        //string detectorType = /*"SIFT";*/ "AKAZE"; //"ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
+        string detectorType = "ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -141,7 +145,7 @@ int main(int argc, const char *argv[])
         //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
-        bool bLimitKpts = false; // TODO: disable it in the final version
+        bool bLimitKpts = false; 
         if (bLimitKpts)
         {
             int maxKeypoints = 50;
@@ -196,7 +200,7 @@ int main(int argc, const char *argv[])
 
         cv::Mat descriptors;
         //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        std::string descriptorType = "AKAZE"; /*"SIFT";*/ /*"ORB";*/
+        std::string descriptorType = /*"AKAZE";*/ /*"BRIEF";*/ /*"SIFT";*/ "FREAK"; /*"ORB";*/
         double descriptionTime = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
 
         cout << descriptorType << " descriptor extraction in " << 1000 * descriptionTime << " ms" << endl;

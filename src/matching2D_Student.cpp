@@ -69,21 +69,15 @@ double descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &des
     }
     else if (descriptorType.compare("BRIEF") == 0)
     {
-        // TODO: fix this
-#if false
-        extractor = cv::xfeatures2d::BRIEF::create();
-#endif
+        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
     }   // BRIEF
     else if (descriptorType.compare("ORB") == 0)
     {
         extractor = cv::ORB::create();
     }   // ORB
     else if (descriptorType.compare("FREAK") == 0)
-    {
-        // TODO: fix this
-#if false
-        extractor = cv::FREAK::create();
-#endif
+    {        
+        extractor = cv::xfeatures2d::FREAK::create();
     }   // FREAK
     else if (descriptorType.compare("AKAZE") == 0)
     {

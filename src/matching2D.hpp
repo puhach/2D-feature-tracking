@@ -15,10 +15,10 @@
 #include <opencv2/features2d.hpp>
 
 // check whether we need to include xfeatures2d to use SIFT
-#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44 
-    #include <opencv2/xfeatures2d.hpp>
-    #include <opencv2/xfeatures2d/nonfree.hpp>
-#endif
+//#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44 
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/xfeatures2d/nonfree.hpp>
+//#endif
 
 #include "dataStructures.h"
 
