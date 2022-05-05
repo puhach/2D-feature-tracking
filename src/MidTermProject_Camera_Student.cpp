@@ -49,6 +49,7 @@ int main(int argc, const char *argv[])
     float avgKeyPointSize = 0.0f;
     float avgKeyPointSizeStdDev = 0.0f;
     unsigned long avgMatchNum = 0;
+    double avgDetectionTime = 0, avgDescriptionTime = 0;
 
     /* MAIN LOOP OVER ALL IMAGES */
 
@@ -95,18 +96,24 @@ int main(int argc, const char *argv[])
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
         //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
 
+        double detectionTime = 0;
         if (detectorType.compare("SHITOMASI") == 0)
         {
-            detKeypointsShiTomasi(keypoints, imgGray, false);
+            detectionTime = detKeypointsShiTomasi(keypoints, imgGray, false);
         }   // SHITOMASI
         else if (detectorType.compare("HARRIS") == 0)
         {
-            detKeypointsHarris(keypoints, imgGray, false);
+            detectionTime = detKeypointsHarris(keypoints, imgGray, false);
         }   // HARRIS
         else
         {
-            detKeypointsModern(keypoints, imgGray, detectorType, false);
+            detectionTime = detKeypointsModern(keypoints, imgGray, detectorType, false);
         }   // other detector types
+
+
+        std::cout << detectorType << " detection with n = " << keypoints.size() << " keypoints in " << 1000 * detectionTime << " ms" << std::endl;
+
+        avgDetectionTime += detectionTime;
 
         //// EOF STUDENT ASSIGNMENT
 
@@ -190,7 +197,12 @@ int main(int argc, const char *argv[])
         cv::Mat descriptors;
         //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         std::string descriptorType = "AKAZE"; /*"SIFT";*/ /*"ORB";*/
-        descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
+        double descriptionTime = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
+
+        cout << descriptorType << " descriptor extraction in " << 1000 * descriptionTime << " ms" << endl;
+
+        avgDescriptionTime += descriptionTime;
+
         //// EOF STUDENT ASSIGNMENT
 
         // push descriptors for current frame to end of data buffer
@@ -260,10 +272,15 @@ int main(int argc, const char *argv[])
     else
         avgMatchNum = 0;
 
+    avgDetectionTime /= numFrames;
+    avgDescriptionTime /= numFrames;
+
     std::cout << "Average number of vehicle keypoints per frame: " << avgKeyPointNumPerFrame << std::endl;
     std::cout << "Average vehicle keypoint size per frame: " << avgKeyPointSize << std::endl;
     std::cout << "Vehicle keypoint size standard deviation per frame: " << avgKeyPointSizeStdDev << std::endl;
     std::cout << "Average number of matches: " << avgMatchNum << std::endl;
+    std::cout << "Average keypoint detection time: " << avgDetectionTime*1000 << " ms" << std::endl;
+    std::cout << "Average descriptor extraction time: " << avgDescriptionTime*1000 << " ms" << std::endl;
 
     return 0;
 }
