@@ -48,8 +48,6 @@ Descriptor distance test is used as a filtering method for removing bad keypoint
 
 ## MP.7 Performance Evaluation 1
 
-Count the number of keypoints on the preceding vehicle for all 10 images and take note of the distribution of their neighborhood size. Do this for all the detectors you have implemented.
-
 ### The number of keypoints on the preceding vehicle 
 
 Frame   | Harris    | Shi-Tomasi    | FAST  | BRISK | ORB   | AKAZE | SIFT  |
@@ -99,6 +97,7 @@ Frame   | Harris    | Shi-Tomasi    | FAST  | BRISK | ORB   | AKAZE | SIFT  |
 10      |  0        | 0             |  0    |14.6671|23.6705|3.60137|6.68117|
 Avg.    |  0        | 0             |  0    |14.5814|25.1353|3.53113|5.94584|
 
+We can notice that for some detectors the size of a keypoint is fixed, therefore the standard deviation of these keypoints is zero.
 
 ## MP.8 Performance Evaluation 2
 
