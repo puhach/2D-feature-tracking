@@ -93,8 +93,7 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        //string detectorType = /*"SIFT";*/ "AKAZE"; //"ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
-        string detectorType = "ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
+        string detectorType = /*"ORB";*/ /*"BRISK";*/ /*"FAST";*/ /*"HARRIS";*/ /*"SHITOMASI";*/ /*"AKAZE"*/ "SIFT";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -200,7 +199,7 @@ int main(int argc, const char *argv[])
 
         cv::Mat descriptors;
         //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        std::string descriptorType = /*"AKAZE";*/ /*"BRIEF";*/ /*"SIFT";*/ "FREAK"; /*"ORB";*/
+        std::string descriptorType = /*"AKAZE";*/ /*"BRIEF";*/ /*"SIFT";*/ /*"FREAK";*/ "ORB";
         double descriptionTime = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
 
         cout << descriptorType << " descriptor extraction in " << 1000 * descriptionTime << " ms" << endl;
@@ -221,7 +220,7 @@ int main(int argc, const char *argv[])
 
             vector<cv::DMatch> matches;
             string matcherType = /*"MAT_FLANN";*/ "MAT_BF";        // MAT_BF, MAT_FLANN
-            string descriptorType = /*"DES_HOG";*/ "DES_BINARY"; // DES_BINARY, DES_HOG
+            string descriptorType = "DES_HOG"; /*"DES_BINARY";*/ // DES_BINARY, DES_HOG
             string selectorType = "SEL_KNN"; /*"SEL_NN"*/;       // SEL_NN, SEL_KNN
 
             //// STUDENT ASSIGNMENT
@@ -263,6 +262,7 @@ int main(int argc, const char *argv[])
             bVis = false;
         }
 
+        std::cout << std::endl;
     } // eof loop over all images
 
     auto numFrames = (imgEndIndex - imgStartIndex + 1);
@@ -285,6 +285,6 @@ int main(int argc, const char *argv[])
     std::cout << "Average number of matches: " << avgMatchNum << std::endl;
     std::cout << "Average keypoint detection time: " << avgDetectionTime*1000 << " ms" << std::endl;
     std::cout << "Average descriptor extraction time: " << avgDescriptionTime*1000 << " ms" << std::endl;
-
+    std::cout << "Average processing time: " << (avgDetectionTime+avgDescriptionTime)*1000 << " ms" << std::endl;
     return 0;
 }

@@ -28,6 +28,7 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
         
         matcher = cv::FlannBasedMatcher::create();
     }
+    else throw std::runtime_error("Unknown matcher type: " + matcherType);
 
     // perform matching task
     if (selectorType.compare("SEL_NN") == 0)
