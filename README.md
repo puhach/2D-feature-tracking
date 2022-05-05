@@ -112,8 +112,10 @@ FREAK   |  39       |  85           | 248   |  169  | 46    | 131   | 65    |
 AKAZE   |  N/A*     |  N/A*         | N/A*  | N/A*  | N/A*  | 139   | N/A*  |
 SIFT    |  34       |  103          | 309   | 182   | 84    | 141   | 88    |
 
-* AKAZE descriptors can only be used with KAZE or AKAZE keypoints
-** ORB descriptors failed to work with SIFT keypoints in OpenCV 4.1 and 4.5.2 (both on Windows and Ubuntu)
+\* AKAZE descriptors can only be used with KAZE or AKAZE keypoints
+
+\** ORB descriptors failed to work with SIFT keypoints in OpenCV 4.1 and 4.5.2 (both on Windows and Ubuntu)
+
 
 ## MP.9 Performance Evaluation 3
 
@@ -127,8 +129,10 @@ FREAK   |  188      | 211           | 172   | 267   | 169   | 478   | 393   |
 AKAZE   |  N/A*     | N/A*          | N/A*  | N/A*  | N/A*  | 637   | N/A*  |
 SIFT    |  235      | 188           | 272   | 549   | 372   | 563   | 1075  |
 
-* AKAZE descriptors can only be used with KAZE or AKAZE keypoints
-** ORB descriptors failed to work with SIFT keypoints in OpenCV 4.1 and 4.5.2 (both on Windows and Ubuntu)
+\* AKAZE descriptors can only be used with KAZE or AKAZE keypoints
+
+\** ORB descriptors failed to work with SIFT keypoints in OpenCV 4.1 and 4.5.2 (both on Windows and Ubuntu)
+
 
 This data suggests the following top choices of detector/descriptor pairs in terms of speed:
 1. FAST keypoints + ORB descriptors
