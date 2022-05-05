@@ -13,25 +13,44 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 
     if (matcherType.compare("MAT_BF") == 0)
     {
-        int normType = cv::NORM_HAMMING;
+        int normType = descriptorType.compare("DES_BINARY")==0 ? cv::NORM_HAMMING : cv::NORM_L2;
         matcher = cv::BFMatcher::create(normType, crossCheck);
     }
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
-        // ...
+        // Workaround for the OpenCV bug
+        
+        if (descSource.type() != CV_32F)
+            descSource.convertTo(descSource, CV_32F);
+        
+        if (descRef.type() != CV_32F)
+            descRef.convertTo(descRef, CV_32F);
+        
+        matcher = cv::FlannBasedMatcher::create();
     }
 
     // perform matching task
     if (selectorType.compare("SEL_NN") == 0)
     { // nearest neighbor (best match)
-
         matcher->match(descSource, descRef, matches); // Finds the best match for each descriptor in desc1
     }
     else if (selectorType.compare("SEL_KNN") == 0)
     { // k nearest neighbors (k=2)
 
-        // ...
-    }
+        std::vector<std::vector<cv::DMatch>> kmatches;
+        matcher->knnMatch(descSource, descRef, kmatches, 2);
+
+        matches.clear();
+        for (auto&& neighbors : kmatches)
+        {
+            assert(!neighbors.empty());
+            if (neighbors.size() < 2 || neighbors[0].distance < 0.8*neighbors[1].distance)
+            {
+                matches.push_back(std::move(neighbors[0]));
+            }
+        }   // for neighbors
+    }   // SEL_KNN
+    else throw std::runtime_error("Unknown selector type: " + selectorType);
 }
 
 // Use one of several types of state-of-art descriptors to uniquely identify keypoints
@@ -48,11 +67,37 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
 
         extractor = cv::BRISK::create(threshold, octaves, patternScale);
     }
-    else
+    else if (descriptorType.compare("BRIEF") == 0)
     {
-
-        //...
-    }
+        // TODO: fix this
+#if false
+        extractor = cv::xfeatures2d::BRIEF::create();
+#endif
+    }   // BRIEF
+    else if (descriptorType.compare("ORB") == 0)
+    {
+        extractor = cv::ORB::create();
+    }   // ORB
+    else if (descriptorType.compare("FREAK") == 0)
+    {
+        // TODO: fix this
+#if false
+        extractor = cv::FREAK::create();
+#endif
+    }   // FREAK
+    else if (descriptorType.compare("AKAZE") == 0)
+    {
+        extractor = cv::AKAZE::create();
+    }   // AKAZE
+    else if (descriptorType.compare("SIFT") == 0)
+    {
+#if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44
+        extractor = cv::xfeatures2d::SiftDescriptorExtractor::create();
+#else
+        extractor = cv::SiftDescriptorExtractor::create();
+#endif
+    }   // SIFT
+    else throw std::runtime_error("Unknown descriptor type: " + descriptorType);
 
     // perform feature description
     double t = (double)cv::getTickCount();
@@ -170,7 +215,7 @@ void detKeypointsModern(std::vector<cv::KeyPoint>& keypoints, cv::Mat& img, std:
     else if (detectorType.compare("SIFT") == 0)
     {
 #if CV_VERSION_MAJOR*10+CV_VERSION_MINOR < 44
-        detector = cv::xfeatures2d::SIFT::create();
+        detector = cv::xfeatures2d::SiftFeatureDetector::create();
 #else
         detector = cv::SiftFeatureDetector::create();
 #endif

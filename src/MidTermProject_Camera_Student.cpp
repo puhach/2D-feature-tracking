@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath>
 #include <limits>
+#include <numeric>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -43,6 +44,10 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
+
+    unsigned long totalKeypoints = 0;
+    float avgKeyPointSize = 0.0f;
+    float avgKeyPointSizeStdDev = 0.0f;
 
     /* MAIN LOOP OVER ALL IMAGES */
 
@@ -82,8 +87,8 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        //string detectorType = "SIFT"; //"AKAZE"; //"ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
-        string detectorType = "ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
+        string detectorType = /*"SIFT";*/ "AKAZE"; //"ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
+        //string detectorType = "ORB"; //"BRISK"; //"FAST"; //"HARRIS"; //"SHITOMASI";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -116,10 +121,11 @@ int main(int argc, const char *argv[])
                 std::remove_if(std::begin(keypoints), std::end(keypoints), 
                     [&vehicleRect](const auto& kp) 
                     {
-                        return kp.pt.x < vehicleRect.tl().x
+                        return !vehicleRect.contains(kp.pt);
+                        /*return kp.pt.x < vehicleRect.tl().x
                             || kp.pt.y < vehicleRect.tl().y
                             || kp.pt.x > vehicleRect.br().x
-                            || kp.pt.y > vehicleRect.br().y;
+                            || kp.pt.y > vehicleRect.br().y;*/
                     }), 
                 std::cend(keypoints));
         }   // bFocusOnVehicle
@@ -140,6 +146,36 @@ int main(int argc, const char *argv[])
             cout << " NOTE: Keypoints have been limited!" << endl;
         }
 
+        // count the number of keypoinst detected in all images
+        totalKeypoints += static_cast<unsigned long>(keypoints.size());
+
+        // compute the average size of a keypoint
+        auto frameAvgKeyPointSize = std::accumulate(std::cbegin(keypoints), std::cend(keypoints), 0.0f, 
+            [](auto acc, const auto& kp) 
+            {
+                return acc + kp.size;
+            });
+
+        frameAvgKeyPointSize /= keypoints.size() + std::numeric_limits<float>::epsilon();
+        
+        avgKeyPointSize += frameAvgKeyPointSize;
+
+        // compute the standard deviation
+        auto frameKeyPointSizeStdDev = 0.0f;
+        for (const auto& kp : keypoints)
+        {
+            auto szDiff = kp.size - frameAvgKeyPointSize;
+            frameKeyPointSizeStdDev += szDiff * szDiff;
+        }
+
+        frameKeyPointSizeStdDev = std::sqrt(frameKeyPointSizeStdDev / (keypoints.size() + std::numeric_limits<float>::epsilon()));
+        
+        avgKeyPointSizeStdDev += frameKeyPointSizeStdDev;
+
+        std::cout << "Vehicle keypoint number: " << keypoints.size() << std::endl;
+        std::cout << "Mean vehicle keypoint size: " << frameAvgKeyPointSize << std::endl;
+        std::cout << "Standard deviation: " << frameKeyPointSizeStdDev << std::endl;
+
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;
         cout << "#2 : DETECT KEYPOINTS done" << endl;
@@ -151,7 +187,8 @@ int main(int argc, const char *argv[])
         //// -> BRIEF, ORB, FREAK, AKAZE, SIFT
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        std::string descriptorType = "AKAZE"; /*"SIFT";*/ /*"ORB";*/
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
         //// EOF STUDENT ASSIGNMENT
 
@@ -166,9 +203,9 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+            string matcherType = "MAT_FLANN"; /*"MAT_BF";*/        // MAT_BF, MAT_FLANN
+            string descriptorType = /*"DES_HOG";*/ "DES_BINARY"; // DES_BINARY, DES_HOG
+            string selectorType = "SEL_KNN"; /*"SEL_NN"*/;       // SEL_NN, SEL_KNN
 
             //// STUDENT ASSIGNMENT
             //// TASK MP.5 -> add FLANN matching in file matching2D.cpp
@@ -206,6 +243,15 @@ int main(int argc, const char *argv[])
         }
 
     } // eof loop over all images
+
+    auto numFrames = (imgEndIndex - imgStartIndex + 1);
+    auto avgKeyPointNumPerFrame = totalKeypoints / numFrames;
+    avgKeyPointSize /= numFrames;
+    avgKeyPointSizeStdDev /= numFrames;
+    
+    std::cout << "Average number of vehicle keypoints per frame: " << avgKeyPointNumPerFrame << std::endl;
+    std::cout << "Average vehicle keypoint size per frame: " << avgKeyPointSize << std::endl;
+    std::cout << "Vehicle keypoint size standard deviation per frame: " << avgKeyPointSizeStdDev << std::endl;
 
     return 0;
 }
