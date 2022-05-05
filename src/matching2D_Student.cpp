@@ -228,7 +228,7 @@ void detKeypointsModern(std::vector<cv::KeyPoint>& keypoints, cv::Mat& img, std:
     detector->detect(img, keypoints);
     t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
 
-    std::cout << detectorType << " with n = " << keypoints.size() << " in " << t * 1000 << " ms" << std::endl;
+    std::cout << detectorType << " detection with n = " << keypoints.size() << " in " << t * 1000 << " ms" << std::endl;
 
     if (bVis)
     {

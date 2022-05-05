@@ -48,6 +48,7 @@ int main(int argc, const char *argv[])
     unsigned long totalKeypoints = 0;
     float avgKeyPointSize = 0.0f;
     float avgKeyPointSizeStdDev = 0.0f;
+    unsigned long avgMatchNum = 0;
 
     /* MAIN LOOP OVER ALL IMAGES */
 
@@ -203,7 +204,7 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_FLANN"; /*"MAT_BF";*/        // MAT_BF, MAT_FLANN
+            string matcherType = /*"MAT_FLANN";*/ "MAT_BF";        // MAT_BF, MAT_FLANN
             string descriptorType = /*"DES_HOG";*/ "DES_BINARY"; // DES_BINARY, DES_HOG
             string selectorType = "SEL_KNN"; /*"SEL_NN"*/;       // SEL_NN, SEL_KNN
 
@@ -214,6 +215,10 @@ int main(int argc, const char *argv[])
             matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
                              matches, descriptorType, matcherType, selectorType);
+
+            std::cout << "Number of matches: " << matches.size() << std::endl;
+
+            avgMatchNum += static_cast<unsigned long>(matches.size());
 
             //// EOF STUDENT ASSIGNMENT
 
@@ -249,9 +254,16 @@ int main(int argc, const char *argv[])
     avgKeyPointSize /= numFrames;
     avgKeyPointSizeStdDev /= numFrames;
     
+    // the number of matches can only be counted between two frames, therefore the first frame is skipped
+    if (numFrames >= 2)
+        avgMatchNum /= (numFrames - 1);
+    else
+        avgMatchNum = 0;
+
     std::cout << "Average number of vehicle keypoints per frame: " << avgKeyPointNumPerFrame << std::endl;
     std::cout << "Average vehicle keypoint size per frame: " << avgKeyPointSize << std::endl;
     std::cout << "Vehicle keypoint size standard deviation per frame: " << avgKeyPointSizeStdDev << std::endl;
+    std::cout << "Average number of matches: " << avgMatchNum << std::endl;
 
     return 0;
 }
